@@ -1,0 +1,69 @@
+# env
+.env
+
+# LaTeX
+*.log
+*.synctex.gz
+*.aux
+*.toc
+*.out
+*.bbl
+*.blg
+*.fls
+*.fdb_latexmk
+*.lof
+*.lot
+
+# MS Office
+~$*
+
+# System
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# IDEs
+.vscode/
+.vs/
+.idea/
+
+# Python
+*.pyc
+__pycache__/
+.pytest_cache/
+.nltk
+
+# C
+*.o
+*.pb.*
+
+# Java
+.gradle/
+build/
+target/
+
+# Node/React
+node_modules/
+build/
+dist/
+
+#amplify-do-not-edit-begin
+amplify/\#current-cloud-backend
+amplify/.config/local-*
+amplify/logs
+amplify/mock-data
+amplify/backend/amplify-meta.json
+amplify/backend/.temp
+build/
+dist/
+node_modules/
+aws-exports.js
+awsconfiguration.json
+amplifyconfiguration.json
+amplifyconfiguration.dart
+amplify-build-config.json
+amplify-gradle-config.json
+amplifytools.xcconfig
+.secret-*
+**.sample
+#amplify-do-not-edit-end
