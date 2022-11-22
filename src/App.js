@@ -5,29 +5,82 @@ function App() {
   const [text, setText] = useState("");
   const [img, setImg] = useState("");
   const [shinyImg, setShinyImg] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isFound, setIsFound] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
+
+  const serebiiURL = "https://www.serebii.net/scarletviolet/pokemon";
+  const serebiiShinyURL = "https://www.serebii.net/Shiny/SV";
+  const notFoundURL =
+    "https://media.giphy.com/media/lkdH8FmImcGoylv3t3/giphy.gif";
+  const loadingURL = "https://media.tenor.com/RVvnVPK-6dcAAAAM/reload-cat.gif";
 
   const fetchData = async () => {
+    setHasSearched(true);
     try {
+      setIsLoading(true);
       const res = await axios.get(`https://pokeapi.co/api/v2/pokemon/${text}`);
-      setImg(res.data.sprites.front_default);
-      setShinyImg(res.data.sprites.front_shiny);
+      console.info(res.data);
+      let id = res.data.id;
+      if (id < 100) {
+        id = `0${id}`;
+      }
+
+      setImg(`${serebiiURL}/${id}.png`);
+      setShinyImg(`${serebiiShinyURL}/${id}.png`);
+      setIsFound(true);
     } catch (error) {
       console.error(error);
-      setImg(
-        "https://i.kym-cdn.com/entries/icons/facebook/000/025/666/260.jpg"
-      );
-      setShinyImg("");
+
+      if (!isNaN(text)) {
+        setImg(`${serebiiURL}/${text}.png`);
+        setShinyImg(`${serebiiShinyURL}/${text}.png`);
+        setIsFound(true);
+      } else {
+        setIsFound(false);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleInput = (event) => {
+    if (event.key === "Enter") {
+      fetchData();
     }
   };
 
   return (
     <>
-      <div>Ez shiny Pokémon finder 9000</div>
-      <input type="text" onChange={(e) => setText(e.target.value)} />
+      <h3>Ez shiny Pokémon finder 9000</h3>
+      If it says not found use the number plz k thx. If still not found, add 905
+      to the number. Shhh don't ask
+      <br />
+      <input
+        type="text"
+        placeholder="Pokémon name or #"
+        onKeyDown={(event) => setText(event.target.value)}
+        onKeyUp={handleInput}
+        style={{ margin: "20px" }}
+      />
       <button onClick={fetchData}>Search</button>
       <br />
-      <img src={img} />
-      <img src={shinyImg} />
+      {isLoading ? (
+        <img src={loadingURL} alt="Loading" />
+      ) : isFound ? (
+        <>
+          <div>
+            <img src={img} alt="" style={{ verticalAlign: "middle" }} />
+            Normal sprite
+          </div>
+          <div>
+            <img src={shinyImg} alt="" style={{ verticalAlign: "middle" }} />
+            Shiny sprite
+          </div>
+        </>
+      ) : hasSearched ? (
+        <img src={notFoundURL} alt="Not found" />
+      ) : null}
     </>
   );
 }
