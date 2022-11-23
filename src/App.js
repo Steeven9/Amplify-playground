@@ -1,9 +1,11 @@
+import axios from "axios";
 import React, { useState } from "react";
 import loading from "./img/loading.gif";
 import notFound from "./img/notFound.webp";
 
 function App() {
   const [img, setImg] = useState("");
+  const [dex, setDex] = useState("SV");
   const [shinyImg, setShinyImg] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isFound, setIsFound] = useState(false);
@@ -16,32 +18,30 @@ function App() {
   const fetchData = async () => {
     setHasSearched(true);
     const queryText = document.querySelector("#searchbar").value;
-    let dex;
-    document.querySelectorAll(".dexRadio").forEach((el) => {
-      if (el.checked) {
-        dex = el.value;
-      }
-    });
     let id;
 
     if (isNaN(queryText)) {
-      // name
-      //TODO request to pokeAPI
-
-      alert("Please use the number (for now)");
+      // grab id by name
+      try {
+        const res = await axios.get(
+          `https://pokeapi.co/api/v2/pokemon/${queryText}`
+        );
+        id = res.data.id;
+      } catch (error) {
+        console.error(error);
+        alert("Please use the number (for now)");
+      }
     } else {
-      // id
+      // grab id directly
       id = Number(queryText);
       if (dex === "SV") {
         id += 905;
       }
-      if (id < 10) {
-        id = `00${id}`;
-      } else if (id < 100) {
-        id = `0${id}`;
-      }
-      console.log(id);
-      console.log(dex);
+    }
+    if (id < 10) {
+      id = `00${id}`;
+    } else if (id < 100) {
+      id = `0${id}`;
     }
 
     try {
@@ -76,20 +76,24 @@ function App() {
   return (
     <>
       <h3>Ez shiny Pokémon finder 9000</h3>
-      If it says not found use the number plz k thx.
-      <br />
+      <div>If it says not found use the number plz k thx.</div>
+
       <label>
         <input
           type="radio"
-          value="SV"
           name="dex"
-          className="dexRadio"
-          checked
-        />{" "}
+          onChange={() => setDex("SV")}
+          checked={dex === "SV"}
+        />
         SV regional
       </label>
-      <label>
-        <input type="radio" value="SwSh" name="dex" className="dexRadio" />{" "}
+      <label style={{ marginLeft: "10px" }}>
+        <input
+          type="radio"
+          name="dex"
+          onChange={() => setDex("SwSh")}
+          checked={dex === "SwSh"}
+        />
         Global
       </label>
       <input
@@ -104,20 +108,19 @@ function App() {
           padding: "10px",
         }}
       />
+
       <button onClick={fetchData}>Search</button>
-      <br />
+
       {isLoading ? (
         <img src={loading} alt="Loading" />
       ) : isFound ? (
         <>
-          <div>
-            Normal sprite
-            <br />
+          <div style={{ marginBottom: "20px" }}>
+            <div>Normal sprite</div>
             <img src={img} alt="" style={{ verticalAlign: "middle" }} />
           </div>
           <div>
-            Shiny sprite
-            <br />
+            <div>Shiny sprite</div>
             <img src={shinyImg} alt="" style={{ verticalAlign: "middle" }} />
           </div>
         </>
