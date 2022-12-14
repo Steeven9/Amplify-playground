@@ -1,14 +1,14 @@
 import { Amplify } from "aws-amplify";
 import React from "react";
-import ReactDOM from "react-dom/client";
+import * as ReactDOM from "react-dom";
 import App from "./App";
 import awsExports from "./aws-exports";
 
 Amplify.configure(awsExports);
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(
+ReactDOM.render(
   <React.StrictMode>
     <App />
-  </React.StrictMode>
+  </React.StrictMode>,
+  document.getElementById("root")
 );

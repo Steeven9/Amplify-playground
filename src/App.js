@@ -1,70 +1,74 @@
-import axios from "axios";
-import React, { useState } from "react";
+import { Autocomplete, Button, TextField, Typography } from "@mui/material";
+import { default as React, useState } from "react";
 import loading from "./img/loading.gif";
 import notFound from "./img/notFound.webp";
 
 function App() {
   const [img, setImg] = useState("");
-  const [dex, setDex] = useState("SV");
   const [shinyImg, setShinyImg] = useState("");
+  const [generation, setGeneration] = useState({
+    value: "scarlet-violet",
+    label: "Scarlet/Violet",
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [isFound, setIsFound] = useState(false);
+  const [isShinyFound, setIsShinyFound] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
 
-  const serebiiURL = "https://www.serebii.net/scarletviolet/pokemon";
-  // const serebiiTextualURL = "https://www.serebii.net/pokemon/art";
-  const serebiiShinyURL = "https://www.serebii.net/Shiny/SV";
+  const baseURL = "https://img.pokemondb.net/sprites";
+
+  const generations = [
+    { value: "red-blue", label: "Red/blue" },
+    { value: "silver", label: "Silver" },
+    { value: "ruby-sapphire", label: "Ruby/Sapphire" },
+    { value: "diamond-pearl", label: "Diamond/Pearl" },
+    { value: "black-white", label: "Black/White" },
+    { value: "x-y", label: "X/Y" },
+    { value: "lets-go-pikachu-eevee", label: "Let's go" },
+    { value: "sword-shield", label: "Sword/Shield" },
+    { value: "home", label: "Home" },
+    { value: "scarlet-violet", label: "Scarlet/Violet" },
+  ];
 
   const fetchData = async () => {
     setHasSearched(true);
     const queryText = document.querySelector("#searchbar").value;
-    let id;
 
-    if (isNaN(queryText)) {
-      // grab id by name
+    if (!isNaN(queryText)) {
+      console.error("Number detected");
+      setIsFound(false);
+      setIsShinyFound(false);
+    } else {
       try {
-        const res = await axios.get(
-          `https://pokeapi.co/api/v2/pokemon/${queryText}`
-        );
-        id = res.data.id;
+        setIsLoading(true);
+        let image = new Image();
+        let shinyImage = new Image();
+
+        image.onload = () => {
+          setImg(`${baseURL}/${generation.value}/normal/${queryText}.png`);
+          setIsFound(true);
+        };
+        shinyImage.onload = () => {
+          setShinyImg(`${baseURL}/${generation.value}/shiny/${queryText}.png`);
+          setIsShinyFound(true);
+        };
+        image.onerror = () => {
+          console.error("Normal not found");
+          setIsFound(false);
+        };
+        shinyImage.onerror = () => {
+          console.error("Shiny not found");
+          setIsShinyFound(false);
+        };
+
+        image.src = `${baseURL}/${generation.value}/normal/${queryText}.png`;
+        shinyImage.src = `${baseURL}/${generation.value}/shiny/${queryText}.png`;
       } catch (error) {
         console.error(error);
-        alert("Please use the number (for now)");
-      }
-    } else {
-      // grab id directly
-      id = Number(queryText);
-      if (dex === "SV") {
-        id += 905;
-      }
-    }
-    if (id < 10) {
-      id = `00${id}`;
-    } else if (id < 100) {
-      id = `0${id}`;
-    }
-
-    try {
-      setIsLoading(true);
-      let image = new Image();
-
-      image.onload = function () {
-        setImg(`${serebiiURL}/${id}.png`);
-        setShinyImg(`${serebiiShinyURL}/${id}.png`);
-        setIsFound(true);
-      };
-      image.onerror = function () {
-        console.error("Not found");
         setIsFound(false);
-      };
-
-      image.src = `${serebiiURL}/${id}.png`;
-    } catch (error) {
-      console.error(error);
-      setIsFound(false);
-    } finally {
-      setIsLoading(false);
+      }
     }
+    setIsLoading(false);
   };
 
   const handleInput = (event) => {
@@ -73,60 +77,72 @@ function App() {
     }
   };
 
+  const renderImages = () => {
+    if (isLoading) {
+      return <img src={loading} alt="Loading" />;
+    }
+    if (hasSearched) {
+      return (
+        <>
+          <div style={{ marginBottom: "20px" }}>
+            <Typography gutterBottom>Normal sprite</Typography>
+            <img
+              src={isFound ? img : notFound}
+              alt=""
+              style={{ verticalAlign: "middle" }}
+            />
+          </div>
+          <div>
+            <Typography gutterBottom>Shiny sprite</Typography>
+            <img
+              src={isShinyFound ? shinyImg : notFound}
+              alt=""
+              style={{ verticalAlign: "middle" }}
+            />
+          </div>
+        </>
+      );
+    }
+  };
+
   return (
     <>
       <h3>Ez shiny Pokémon finder 9000</h3>
-      <div>If it says not found use the number plz k thx.</div>
 
-      <label>
-        <input
-          type="radio"
-          name="dex"
-          onChange={() => setDex("SV")}
-          checked={dex === "SV"}
-        />
-        SV regional
-      </label>
-      <label style={{ marginLeft: "10px" }}>
-        <input
-          type="radio"
-          name="dex"
-          onChange={() => setDex("SwSh")}
-          checked={dex === "SwSh"}
-        />
-        Global
-      </label>
-      <input
-        type="text"
-        id="searchbar"
-        placeholder="Pokémon name or number"
-        onKeyUp={handleInput}
+      <div
         style={{
-          margin: "20px",
-          outline: "none",
-          width: "400px",
-          padding: "10px",
+          marginBottom: "20px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-evenly",
         }}
-      />
+      >
+        <Autocomplete
+          disablePortal
+          options={generations}
+          value={generation}
+          autoComplete
+          sx={{ width: 200 }}
+          onChange={(event, value) => setGeneration(value)}
+          isOptionEqualToValue={(option, value) => option.value === value.value}
+          renderInput={(params) => <TextField {...params} label="Generation" />}
+        />
 
-      <button onClick={fetchData}>Search</button>
+        <TextField
+          id="searchbar"
+          placeholder="Pokémon name"
+          onKeyUp={handleInput}
+          style={{
+            width: "400px",
+          }}
+        />
 
-      {isLoading ? (
-        <img src={loading} alt="Loading" />
-      ) : isFound ? (
-        <>
-          <div style={{ marginBottom: "20px" }}>
-            <div>Normal sprite</div>
-            <img src={img} alt="" style={{ verticalAlign: "middle" }} />
-          </div>
-          <div>
-            <div>Shiny sprite</div>
-            <img src={shinyImg} alt="" style={{ verticalAlign: "middle" }} />
-          </div>
-        </>
-      ) : hasSearched ? (
-        <img src={notFound} alt="Not found" />
-      ) : null}
+        <Button sx={{ ml: 1 }} variant="contained" onClick={fetchData}>
+          Search
+        </Button>
+      </div>
+
+      {renderImages()}
     </>
   );
 }
